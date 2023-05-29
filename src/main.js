@@ -40,25 +40,10 @@ const { captureRejectionSymbol } = require("ws");
         const config = { childList: true };
         observer.observe(ul, config);
     }
-    async function comment(once) {
-        setTimeout(() => {
-            console.log(document.querySelector('.mrChatList__list'))
-            if (null != document.querySelector('.mrChatList__list')) {
-                if (once === true) {
-                    comment(false)
-                } else {
-
-
-                    a(observer);
-                }
-            } else {
-
-                console.log("米みつかんないよ")
-                comment(true)
-            }
-
-        }, 3000);
-    }
+    /**
+     * サーバーと接続し自動配信を行う
+     * @param {string} afk 全自動か半自動化の判断 
+     */
     async function websocketp(afk) {//websocket成立待ち
         try {
             setTimeout(function () {
@@ -74,19 +59,14 @@ const { captureRejectionSymbol } = require("ws");
                 // WebSocket接続時の処理
                 ws.addEventListener('open', function (event) {
                     // URLを取得
-                    const urlInput = document.querySelector('div.m-inputTextGroup.m-streamingUrl input[type="text"]');
-                    const url = urlInput.value;
-
-                    // KEYを取得
-                    const keyInput = document.querySelector('div.m-inputTextGroup.m-streamingKey input[type="text"]');
-                    const key = keyInput.value;
+                    const data_buffer = geturl();
                     const status = afk;
 
                     // URLとKEYをオブジェクトに格納し、JSONに変換して送信
                     const data = {
                         status: status,
-                        url: url,
-                        key: key
+                        url: data_buffer.url,
+                        key: data_buffer.key
                     };
                     ws.send(JSON.stringify(data));  //URLとKEYをサーバーに送信する
 
@@ -177,22 +157,21 @@ const { captureRejectionSymbol } = require("ws");
         button2.style.right = '5px';
 
 
-        button2.addEventListener('click', function () {//半自動配信の場合
-            const clickElement = document.querySelector('._item_1b9q2_3');
-            if (clickElement) {
-                clickElement.click();
-                setTimeout(function () {
+        button2.addEventListener('click', function () {//半自動配信の場合;
+            setTimeout(function () {
+                //ここでキー再生性
 
-
-                    const input = document.querySelector('.m-inputText.t-inputText-green');//多分これは機能しない
-                    if (input) {
-                        input.value = title;
-                    }
-                    // 1秒待機
-                    //ここでキー再生性
+                const getkeys = makenewkey();
+                if (getkeys.flag === 1) {
                     websocketp("nonafk");
-                }, 1000); // Wait 1 second
-            }
+                } else {
+                    if (getkeys.flag === 0) {
+                        document.location.reload()//リロードする
+                    }
+                }
+            }, 1000); // Wait 1 second
+
+
         });//ここまで半自動配信
 
 
@@ -268,7 +247,8 @@ const { captureRejectionSymbol } = require("ws");
         }//init
 
         try {//localstorageの存在確認
-            const storedJsonData_check = JSON.parse(localStorage.getItem('keygen'))//存在確認
+
+            const storedJsonData_check = localStorageedit(0, "keygen", null);//存在確認
         } catch (error) {//何もなかった場合ここで初期化する
 
             const keygen_init = {
@@ -277,14 +257,14 @@ const { captureRejectionSymbol } = require("ws");
                 status: 0,
                 mode: 0
             }//init  
-            localStorage.setItem('keygen', JSON.stringify(keygen_init));
+            localStorageedit(1, "keygen", keygen_init);
         }
 
-        const storedJsonData = JSON.parse(localStorage.getItem('keygen'))//ローカルストレージから値を引っ張り出す
+        const storedJsonData = localStorageedit(0, "keygen", null);//存在確認
 
         if (storedJsonData !== undefined) {
             setTimeout(function () {
-                if (storedJsonData.status == 0) {
+                if (storedJsonData.status === 0) {
                     const params = geturl();//現在のURLとかいろいろ受け取る
                     // キー再生成をクリック
 
@@ -292,8 +272,8 @@ const { captureRejectionSymbol } = require("ws");
                     // 1秒待機
                     setTimeout(function () {
                         // キー生成後の画面閉じるための「閉じる」ボタンをクリック
-                        const b = document.querySelector('.m-btn-close.t-btn-close-green>a')
-                        b.click();
+                        const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
+                        close.click();
                         // 1秒待機
 
                         const checknewparams = geturl();//新しいURLを取得する
@@ -308,15 +288,58 @@ const { captureRejectionSymbol } = require("ws");
                                     mode: 1//全自動に対応させた暁にはこれが変動するはず
                                 }//init  
 
-                                localStorage.setItem('keygen', JSON.stringify(keygen));//ローカルストレージに格納
-
+                                localStorageedit(1, "keygen", keygen);//データを保存する
                                 document.location.reload()//リロードする\
+
                                 const returndata = {
                                     url: null,
                                     key: null,
                                     flag: 0
                                 }
-                                return returndata
+                                return returndata//虚無を返す
+                            }
+                        } else {
+                            //配信を許可
+                            const returndata = {
+                                url: checknewparams.url,
+                                key: checknewparams.key,
+                                flag: 1
+                            }
+                            return returndata;
+                        }
+                    }, 1000);
+                }
+                if (storedJsonData.status === 1) {
+                    const params = localStorageedit(0, "keygen", null);//現在のURLとかいろいろ受け取る
+                    // キー再生成をクリック
+                    // 1秒待機
+                    setTimeout(function () {
+                        // キー生成後の画面閉じるための「閉じる」ボタンをクリック
+                        const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
+                        close.click();
+                        // 1秒待機
+
+                        const checknewparams = geturl();//新しいURLを取得する
+                        if (params.URL === checknewparams.url) {//キーが変わっているか確認
+                            if (params.KEY === checknewparams.key) {//もしキーが変わっていない場合
+                                //リロードする
+
+                                const keygen = {
+                                    URL: params.url,
+                                    KEY: params.key,
+                                    status: 1,
+                                    mode: 1//全自動に対応させた暁にはこれが変動するはず
+                                }//init  
+
+                                localStorageedit(1, "keygen", keygen);//データを保存する
+                                document.location.reload()//リロードする\
+
+                                const returndata = {
+                                    url: null,
+                                    key: null,
+                                    flag: 0
+                                }
+                                return returndata//虚無を返す
                             }
                         } else {
                             //配信を許可
@@ -336,6 +359,21 @@ const { captureRejectionSymbol } = require("ws");
 
 
     /**
+     * ローカルストレージを簡単に判断する
+     * @param {boolean} mode 1=書き込み 0=読み込み 
+     * @param {string} objname 書き込むオブジェクトの名前とか 
+     * @param {object} obj 書き込みモードで書き込む中身 
+     * @returns 終了コード or 読み込んだ中身
+     */
+    function localStorageedit(mode, objname, obj) {
+        if (mode === true) {//書き込みモード
+            localStorage.setItem(objname, JSON.stringify(obj));//ローカルストレージに格納
+        } else {//読み込みモード
+            const storedJsonData = JSON.parse(localStorage.getItem(objname));
+            return storedJsonData;
+        }
+    }
+    /**
      * ミラのページからURLとKEYを呼び出す
      * @returns {object} 呼び出した値の中身
      */
@@ -344,7 +382,6 @@ const { captureRejectionSymbol } = require("ws");
         const url = document.querySelector('div.m-inputTextGroup.m-streamingUrl input[type="text"]').value;
         // KEYを取得
         const key = document.querySelector('div.m-inputTextGroup.m-streamingKey input[type="text"]').value;
-
         /**
          * @param {object} params URLとKEYを格納したオブジェクト
          * 
@@ -358,8 +395,15 @@ const { captureRejectionSymbol } = require("ws");
     /**
      *  addAutoStreamButtonを非同期化するための土台
      */
-    async function AASBasync() {
+    async function AASB_async() {
         //  await comment(true)
+        const checkmode = localStorageedit(0, "keygen", null)
+        if (checkmode.mode === 1) {
+            const tryreload = makenewkey();
+            if (tryreload.flag === 1) {
+                websocketp("nonafk")
+            }
+        }
         await addAutoStreamButton();
     }
 
@@ -368,7 +412,7 @@ const { captureRejectionSymbol } = require("ws");
     window.addEventListener('load', function () {
         console.log("mirasp load")
         //      setTimeout(() => {
-        AASBasync();
+        AASB_async();
         //      }, 8000);
     });
 })();
