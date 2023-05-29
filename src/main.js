@@ -10,9 +10,11 @@
 // @grant        none
 // ==/UserScript==
 
+const { captureRejectionSymbol } = require("ws");
+
 (function () {
     const title = "でいりー"//タイトル
-    console.log("新規環境できたよ！")
+
 
     const callback = function (mutationsList, observer) {
         for (let mutation of mutationsList) {
@@ -30,6 +32,8 @@
 
 
     // MutationObserverのインスタンスを生成し、監視を開始する
+
+
     const observer = new MutationObserver(callback);
     async function a(observer) {
         const ul = document.querySelector('.mrChatList__list');
@@ -84,7 +88,7 @@
                         url: url,
                         key: key
                     };
-                    ws.send(JSON.stringify(data));
+                    ws.send(JSON.stringify(data));  //URLとKEYをサーバーに送信する
 
                     ws.addEventListener('message', event => {//自動開始
                         if (event.data === '400 ok') {
@@ -136,15 +140,7 @@
 
                         }, 5000);
                     }, 5000);
-
-
-
-
-
-
-
                 });
-
                 setTimeout(function () {
                     // 配信を開始するための「次へ」ボタンをクリック
 
@@ -180,46 +176,28 @@
         button2.style.top = '50px';
         button2.style.right = '5px';
 
+
         button2.addEventListener('click', function () {//半自動配信の場合
             const clickElement = document.querySelector('._item_1b9q2_3');
             if (clickElement) {
-                // Click the element and wait 1 second
                 clickElement.click();
                 setTimeout(function () {
-                    // Find the input element and set its value to "でいりー"
 
-                    const input = document.querySelector('.m-inputText.t-inputText-green');
+
+                    const input = document.querySelector('.m-inputText.t-inputText-green');//多分これは機能しない
                     if (input) {
                         input.value = title;
-
                     }
                     // 1秒待機
-                    setTimeout(function () {
-                        // 「開始」ボタンをクリック
-                        document.querySelector('a._buttonInner_149zu_5').click();
-
-
-                        // 1秒待機
-
-                        setTimeout(function () {
-                            // 配信画面を閉じるための「閉じる」ボタンをクリック
-                            const b = document.querySelector('.m-btn-close.t-btn-close-green>a')
-                            b.click();
-                            console.log(b)
-                            // 1秒待機
-
-                            // 1秒待機
-                            websocketp("nonafk");
-                        }, 1000);
-
-
-                    }, 1000);
+                    //ここでキー再生性
+                    websocketp("nonafk");
                 }, 1000); // Wait 1 second
             }
         });//ここまで半自動配信
 
 
         // Add event listener to button
+
         button.addEventListener('click', function () {//全自動配信の場合
             // Find the element to click
             const clickElement = document.querySelector('._item_1b9q2_3');
@@ -272,15 +250,125 @@
     }
 
 
-    // Wait for the page to load before adding the button
-    async function main999() {
+    /**
+     * 新しいキーを再生成し、そのキーがきちんと更新されているか確認する関数。
+     * @return {object} 取得したURLとKEYと終了コード
+     */
+    function makenewkey() {
+        /**
+         * @param {object} keygen localstorageに格納する、もしくは引っ張り出した中身。status規定は0が処理終了、１が処理中 modeは 1 = 半自動稼働　2　=　全自動稼働　0 = フリー
+         * 
+         * @param {key} keygen.URL 
+         */
+        const keygen = {
+            URL: "//URL",
+            KEY: "//KEY",
+            status: 0,
+            mode: 0
+        }//init
+
+        try {//localstorageの存在確認
+            const storedJsonData_check = JSON.parse(localStorage.getItem('keygen'))//存在確認
+        } catch (error) {//何もなかった場合ここで初期化する
+
+            const keygen_init = {
+                URL: "0",
+                KEY: "0",
+                status: 0,
+                mode: 0
+            }//init  
+            localStorage.setItem('keygen', JSON.stringify(keygen_init));
+        }
+
+        const storedJsonData = JSON.parse(localStorage.getItem('keygen'))//ローカルストレージから値を引っ張り出す
+
+        if (storedJsonData !== undefined) {
+            setTimeout(function () {
+                if (storedJsonData.status == 0) {
+                    const params = geturl();//現在のURLとかいろいろ受け取る
+                    // キー再生成をクリック
+
+                    document.querySelector('a._buttonInner_149zu_5').click();
+                    // 1秒待機
+                    setTimeout(function () {
+                        // キー生成後の画面閉じるための「閉じる」ボタンをクリック
+                        const b = document.querySelector('.m-btn-close.t-btn-close-green>a')
+                        b.click();
+                        // 1秒待機
+
+                        const checknewparams = geturl();//新しいURLを取得する
+                        if (params.url === checknewparams.url) {//キーが変わっているか確認
+                            if (params.key === checknewparams.key) {//もしキーが変わっていない場合
+                                //リロードする
+
+                                const keygen = {
+                                    URL: params.url,
+                                    KEY: params.key,
+                                    status: 1,
+                                    mode: 1//全自動に対応させた暁にはこれが変動するはず
+                                }//init  
+
+                                localStorage.setItem('keygen', JSON.stringify(keygen));//ローカルストレージに格納
+
+                                document.location.reload()//リロードする\
+                                const returndata = {
+                                    url: null,
+                                    key: null,
+                                    flag: 0
+                                }
+                                return returndata
+                            }
+                        } else {
+                            //配信を許可
+                            const returndata = {
+                                url: checknewparams.url,
+                                key: checknewparams.key,
+                                flag: 1
+                            }
+                            return returndata;
+                        }
+                    }, 1000);
+                }
+            }, 1000);
+        }
+    }
+
+
+
+    /**
+     * ミラのページからURLとKEYを呼び出す
+     * @returns {object} 呼び出した値の中身
+     */
+    function geturl() {
+        //URL取得
+        const url = document.querySelector('div.m-inputTextGroup.m-streamingUrl input[type="text"]').value;
+        // KEYを取得
+        const key = document.querySelector('div.m-inputTextGroup.m-streamingKey input[type="text"]').value;
+
+        /**
+         * @param {object} params URLとKEYを格納したオブジェクト
+         * 
+         */
+        const params = {
+            url: url,
+            key: key
+        }
+        return params;
+    }
+    /**
+     *  addAutoStreamButtonを非同期化するための土台
+     */
+    async function AASBasync() {
         //  await comment(true)
         await addAutoStreamButton();
     }
+
+
+
     window.addEventListener('load', function () {
         console.log("mirasp load")
         //      setTimeout(() => {
-        main999();
+        AASBasync();
         //      }, 8000);
     });
 })();
