@@ -185,7 +185,8 @@
         // Add event listener to button
 
         button.addEventListener('click', function () {//全自動配信の場合
-            // Find the element to click
+            alert("わりぃ　まだ未実装なんだ！")
+            document.location.reload()//リロードする\
             const clickElement = document.querySelector('._item_1b9q2_3');
             if (clickElement) {
                 // Click the element and wait 1 second
