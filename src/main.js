@@ -10,7 +10,7 @@
 // @grant        none
 // ==/UserScript==
 
-const { captureRejectionSymbol } = require("ws");
+
 
 (function () {
     const title = "でいりー"//タイトル
@@ -158,17 +158,24 @@ const { captureRejectionSymbol } = require("ws");
 
 
         button2.addEventListener('click', function () {//半自動配信の場合;
-            setTimeout(function () {
+            setTimeout(async function () {
                 //ここでキー再生性
+                makenewkey()
+                    .then(getkeys => {
+                        console.log("キー取得")
+                        console.log(getkeys)
+                        console.log("げっときーず")
+                        console.log(getkeys)
+                        if (getkeys.flag === 1) {
+                            websocketp("nonafk");
+                        } else {
+                            if (getkeys.flag === 0) {
+                                document.location.reload()//リロードする
+                            }
+                        }
+                    })
 
-                const getkeys = makenewkey();
-                if (getkeys.flag === 1) {
-                    websocketp("nonafk");
-                } else {
-                    if (getkeys.flag === 0) {
-                        document.location.reload()//リロードする
-                    }
-                }
+
             }, 1000); // Wait 1 second
 
 
@@ -233,140 +240,169 @@ const { captureRejectionSymbol } = require("ws");
      * 新しいキーを再生成し、そのキーがきちんと更新されているか確認する関数。
      * @return {object} 取得したURLとKEYと終了コード
      */
-    function makenewkey() {
-        /**
-         * @param {object} keygen localstorageに格納する、もしくは引っ張り出した中身。status規定は0が処理終了、１が処理中 modeは 1 = 半自動稼働　2　=　全自動稼働　0 = フリー
-         * 
-         * @param {key} keygen.URL 
-         */
-        const keygen = {
-            URL: "//URL",
-            KEY: "//KEY",
-            status: 0,
-            mode: 0
-        }//init
+    async function makenewkey() {
+        return new Promise((resolve, reject) => {
 
-        try {//localstorageの存在確認
 
-            const storedJsonData_check = localStorageedit(0, "keygen", null);//存在確認
-        } catch (error) {//何もなかった場合ここで初期化する
-
-            const keygen_init = {
-                URL: "0",
-                KEY: "0",
+            /**
+             * @param {object} keygen localstorageに格納する、もしくは引っ張り出した中身。status規定は0が処理終了、１が処理中 modeは 1 = 半自動稼働　2　=　全自動稼働　0 = フリー
+             * 
+             * @param {key} keygen.URL 
+             */
+            const keygen = {
+                URL: "//URL",
+                KEY: "//KEY",
                 status: 0,
                 mode: 0
-            }//init  
-            localStorageedit(1, "keygen", keygen_init);
-        }
 
-        const storedJsonData = localStorageedit(0, "keygen", null);//存在確認
+            }//init
 
-        if (storedJsonData !== undefined) {
-            setTimeout(function () {
-                if (storedJsonData.status === 0) {
-                    const params = geturl();//現在のURLとかいろいろ受け取る
-                    // キー再生成をクリック
 
-                    document.querySelector('a._buttonInner_149zu_5').click();
-                    // 1秒待機
-                    setTimeout(function () {
-                        // キー生成後の画面閉じるための「閉じる」ボタンをクリック
-                        const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
-                        close.click();
+
+            const storedJsonData_check = localStorageedit(0, "keygen", null);//存在確認
+
+
+            if (storedJsonData_check === null) {
+
+                const keygen_init = {
+                    URL: "0",
+                    KEY: "0",
+                    status: 0,
+                    mode: 0
+                }//init  
+                localStorageedit(1, "keygen", keygen_init);
+
+            }
+            const storedJsonData = localStorageedit(0, "keygen", null);//存在確認
+
+            if (storedJsonData !== undefined) {
+                setTimeout(function () {
+                    if (storedJsonData.status === 0) {
+                        console.log("2_0番")
+                        const params = geturl();//現在のURLとかいろいろ受け取る
+                        // キー再生成をクリック
+
+                        document.querySelector('a._buttonInner_149zu_5').click();
                         // 1秒待機
+                        setTimeout(function () {
+                            // キー生成後の画面閉じるための「閉じる」ボタンをクリック
+                            const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
+                            close.click();
+                            // 1秒待機
 
-                        const checknewparams = geturl();//新しいURLを取得する
-                        if (params.url === checknewparams.url) {//キーが変わっているか確認
-                            if (params.key === checknewparams.key) {//もしキーが変わっていない場合
-                                //リロードする
+                            const checknewparams = geturl();//新しいURLを取得する
+                            if (params.url === checknewparams.url) {//キーが変わっているか確認
+                                if (params.key === checknewparams.key) {//もしキーが変わっていない場合
+                                    //リロードする
 
+                                    const keygen = {
+                                        URL: params.url,
+                                        KEY: params.key,
+                                        status: 1,
+                                        mode: 1//全自動に対応させた暁にはこれが変動するはず
+                                    }//init  
+
+                                    localStorageedit(1, "keygen", keygen);//データを保存する
+                                    document.location.reload()//リロードする\
+
+                                    const returndata = {
+                                        url: null,
+                                        key: null,
+                                        flag: 0
+                                    }
+                                    console.log("なんすかこれ3")
+                                    resolve(returndata)//虚無を返す
+                                }
+                            } else {
+                                //配信を許可
+                                const returndata = {
+                                    url: checknewparams.url,
+                                    key: checknewparams.key,
+                                    flag: 1
+                                }
                                 const keygen = {
-                                    URL: params.url,
-                                    KEY: params.key,
-                                    status: 1,
-                                    mode: 1//全自動に対応させた暁にはこれが変動するはず
+                                    URL: "null",
+                                    KEY: "null",
+                                    status: 0,
+                                    mode: 0//全自動に対応させた暁にはこれが変動するはず
                                 }//init  
 
                                 localStorageedit(1, "keygen", keygen);//データを保存する
-                                document.location.reload()//リロードする\
-
-                                const returndata = {
-                                    url: null,
-                                    key: null,
-                                    flag: 0
-                                }
-                                return returndata//虚無を返す
+                                console.log("なんすかこれ4")
+                                resolve(returndata);
                             }
-                        } else {
-                            //配信を許可
-                            const returndata = {
-                                url: checknewparams.url,
-                                key: checknewparams.key,
-                                flag: 1
-                            }
-                            return returndata;
-                        }
-                    }, 1000);
-                }
-                if (storedJsonData.status === 1) {
-                    const params = localStorageedit(0, "keygen", null);//現在のURLとかいろいろ受け取る
-                    // キー再生成をクリック
-                    // 1秒待機
-                    setTimeout(function () {
-                        // キー生成後の画面閉じるための「閉じる」ボタンをクリック
-                        const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
-                        close.click();
+                        }, 1000);
+                    }
+                    if (storedJsonData.status === 1) {
+                        console.log("2_1番")
+                        const params = localStorageedit(0, "keygen", null);//現在のURLとかいろいろ受け取る
+                        // キー再生成をクリック
                         // 1秒待機
+                        setTimeout(function () {
+                            // キー生成後の画面閉じるための「閉じる」ボタンをクリック
+                            const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
+                            close.click();
+                            // 1秒待機
 
-                        const checknewparams = geturl();//新しいURLを取得する
-                        if (params.URL === checknewparams.url) {//キーが変わっているか確認
-                            if (params.KEY === checknewparams.key) {//もしキーが変わっていない場合
-                                //リロードする
+                            const checknewparams = geturl();//新しいURLを取得する
+                            if (params.URL === checknewparams.url) {//キーが変わっているか確認
+                                if (params.KEY === checknewparams.key) {//もしキーが変わっていない場合
+                                    //リロードする
 
-                                const keygen = {
-                                    URL: params.url,
-                                    KEY: params.key,
-                                    status: 1,
-                                    mode: 1//全自動に対応させた暁にはこれが変動するはず
-                                }//init  
+                                    const keygen = {
+                                        URL: params.url,
+                                        KEY: params.key,
+                                        status: 1,
+                                        mode: 1//全自動に対応させた暁にはこれが変動するはず
+                                    }//init  
 
-                                localStorageedit(1, "keygen", keygen);//データを保存する
-                                document.location.reload()//リロードする\
+                                    localStorageedit(1, "keygen", keygen);//データを保存する
+                                    document.location.reload()//リロードする\
 
-                                const returndata = {
-                                    url: null,
-                                    key: null,
-                                    flag: 0
+                                    const returndata = {
+                                        url: null,
+                                        key: null,
+                                        flag: 0
+                                    }
+                                    console.log("なんすかこれ1")
+                                    resolve(returndata);//虚無を返す
                                 }
-                                return returndata//虚無を返す
+                            } else {
+                                //配信を許可
+                                const returndata = {
+                                    url: checknewparams.url,
+                                    key: checknewparams.key,
+                                    flag: 1
+                                }
+                                const keygen = {
+                                    URL: "null",
+                                    KEY: "null",
+                                    status: 0,
+                                    mode: 0//全自動に対応させた暁にはこれが変動するはず
+                                }//init  
+                                localStorageedit(1, "keygen", keygen);//データを保存する
+                                //console.log("なんすかこれ4")
+                                resolve(returndata);
+                                //  console.log("なんすかこれ2")
                             }
-                        } else {
-                            //配信を許可
-                            const returndata = {
-                                url: checknewparams.url,
-                                key: checknewparams.key,
-                                flag: 1
-                            }
-                            return returndata;
-                        }
-                    }, 1000);
-                }
-            }, 1000);
-        }
+                        }, 1000);
+                    }
+                }, 1000);
+            }
+        })
     }
 
 
 
     /**
      * ローカルストレージを簡単に判断する
-     * @param {boolean} mode 1=書き込み 0=読み込み 
+     * @param {value} mode 1=書き込み 0=読み込み 
      * @param {string} objname 書き込むオブジェクトの名前とか 
      * @param {object} obj 書き込みモードで書き込む中身 
      * @returns 終了コード or 読み込んだ中身
      */
     function localStorageedit(mode, objname, obj) {
-        if (mode === true) {//書き込みモード
+        if (mode === 1) {//書き込みモード
             localStorage.setItem(objname, JSON.stringify(obj));//ローカルストレージに格納
         } else {//読み込みモード
             const storedJsonData = JSON.parse(localStorage.getItem(objname));
@@ -396,14 +432,28 @@ const { captureRejectionSymbol } = require("ws");
      *  addAutoStreamButtonを非同期化するための土台
      */
     async function AASB_async() {
+
         //  await comment(true)
-        const checkmode = localStorageedit(0, "keygen", null)
-        if (checkmode.mode === 1) {
-            const tryreload = makenewkey();
-            if (tryreload.flag === 1) {
-                websocketp("nonafk")
+        try {
+            const checkmode = localStorageedit(0, "keygen", null);
+            console.log(checkmode.mode)
+
+            if (checkmode.mode === 1) {
+                makenewkey()
+                    .then(tryreload => {
+
+                        if (tryreload.flag === 1) {
+                            console.log("一応通っているはず")
+                            websocketp("nonafk");
+                        }
+
+                    })
+
             }
+        } catch (error) {
+            console.log("ないぞこれ？")
         }
+
         await addAutoStreamButton();
     }
 
