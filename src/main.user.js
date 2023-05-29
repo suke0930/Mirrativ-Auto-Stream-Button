@@ -310,7 +310,7 @@
                                         key: null,
                                         flag: 0
                                     }
-                                    console.log("なんすかこれ3")
+
                                     resolve(returndata)//虚無を返す
                                 }
                             } else {
@@ -328,7 +328,7 @@
                                 }//init  
 
                                 localStorageedit(1, "keygen", keygen);//データを保存する
-                                console.log("なんすかこれ4")
+
                                 resolve(returndata);
                             }
                         }, 1000);
@@ -364,7 +364,7 @@
                                         key: null,
                                         flag: 0
                                     }
-                                    console.log("なんすかこれ1")
+
                                     resolve(returndata);//虚無を返す
                                 }
                             } else {
@@ -381,9 +381,9 @@
                                     mode: 0//全自動に対応させた暁にはこれが変動するはず
                                 }//init  
                                 localStorageedit(1, "keygen", keygen);//データを保存する
-                                //console.log("なんすかこれ4")
+
                                 resolve(returndata);
-                                //  console.log("なんすかこれ2")
+
                             }
                         }, 1000);
                     }
@@ -443,7 +443,7 @@
                     .then(tryreload => {
 
                         if (tryreload.flag === 1) {
-                            console.log("一応通っているはず")
+
                             websocketp("nonafk");
                         }
 
@@ -451,7 +451,7 @@
 
             }
         } catch (error) {
-            console.log("ないぞこれ？")
+            console.log("なんか失敗してる...")
         }
 
         await addAutoStreamButton();
