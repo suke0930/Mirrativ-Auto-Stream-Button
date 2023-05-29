@@ -13,4 +13,7 @@ Mirattivのwebアプリ・サイトに自動配信ボタンを追加すること
  - - https://github.com/suke0930/Mirrativ-OBS-Live-Connect-Milivec-
 
  # インストール方法
- 
+ https://github.com/suke0930/Mirrativ-Auto-Stream-Button/raw/main/src/main.user.js
+ ↑のリンクからインストールできます。
+ ミラティブマイページの「配信する」ボタンを押下したあとの画面にボタンが出現します。
+ もし出現しない場合はページをリロードすることにより解決します。
