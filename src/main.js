@@ -12,7 +12,7 @@
 
 (function () {
     const title = "でいりー"//タイトル
-
+    console.log("新規環境できたよ！")
 
     const callback = function (mutationsList, observer) {
         for (let mutation of mutationsList) {
