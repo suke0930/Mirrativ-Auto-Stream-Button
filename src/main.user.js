@@ -46,89 +46,63 @@
      */
     async function websocketp(afk) {//websocket成立待ち
         try {
-            setTimeout(function () {
-                // localhost:8877にWebSocket接続
+            // localhost:8877にWebSocket接続
+            const ws = new WebSocket('ws://localhost:8877');
+            ws.addEventListener('error', (error) => {//何らかの理由でサーバーが起動してないとき
+                alert("おそらくサーバーが起動してないで")
+                alert("サーバーを起動してからページをリロードするんや")
+            });
 
-                const ws = new WebSocket('ws://localhost:8877');
+            // WebSocket接続時の処理
+            ws.addEventListener('open', function (event) {
+                console.log("サーバー接続完了")
+                // URLを取得
+                const data_buffer = geturl();
+                // URLとKEYをオブジェクトに格納し、JSONに変換して送信
+                const data = {
+                    service: "mirattiv",
+                    status: afk,
+                    url: data_buffer.url,
+                    key: data_buffer.key
+                };
 
-                ws.addEventListener('error', (error) => {//何らかの理由でサーバーが起動してないとき
-                    alert("おそらくサーバーが起動してないで")
-                    alert("サーバーを起動してからページをリロードするんや")
-                });
+                ws.send(JSON.stringify(data));  //URLとKEYをサーバーに送信する
 
-                // WebSocket接続時の処理
-                ws.addEventListener('open', function (event) {
-                    // URLを取得
-                    const data_buffer = geturl();
-                    const status = afk;
+                ws.addEventListener('message', event => {//自動開始
+                    if (event.data === '400 ok') {
 
-                    // URLとKEYをオブジェクトに格納し、JSONに変換して送信
-                    const data = {
-                        status: status,
-                        url: data_buffer.url,
-                        key: data_buffer.key
-                    };
-                    ws.send(JSON.stringify(data));  //URLとKEYをサーバーに送信する
+                        console.log("配信開始")
 
-                    ws.addEventListener('message', event => {//自動開始
-                        if (event.data === '400 ok') {
+                        const startstream = document.querySelector('.mrStreamUI__inner>div.mrStreamUI__rightGroup>p.m-btn-primary.t-btn-green>a');
+                        startstream.click();
+                        setTimeout(() => {
+                            const closewindow = document.querySelector('.mrOverlay__share>p.m-btn-close.t-btn-close-green>a');
+                            closewindow.click();
                             setTimeout(() => {
+                                let openstreawm = document.querySelector('._openPlayer_nzdco_49.__asideColumn_nzdco_40');;//配信を開く
+                                openstreawm.click();
+                            }, 1000);
+
+                        }, 2000);
 
 
-                                const input3 = document.querySelector('.m-inputText.t-inputText-green');
-                                if (input3) {
-                                    input3.value = title;
-                                }
+                    }
 
-                                console.log("セレクた")
-
-                                setTimeout(() => {
-
-
-                                    console.log("配信開始")
-                                    const a = document.querySelector('.mrStreamUI__inner>div.mrStreamUI__rightGroup>p.m-btn-primary.t-btn-green>a');
-                                    a.click();
-                                    setTimeout(() => {
-                                        const v = document.querySelector('.mrOverlay__share>p.m-btn-close.t-btn-close-green>a');
-                                        v.click();
-
-                                        setTimeout(() => {
-                                            let v111 = document.querySelector('._openPlayer_nzdco_49.__asideColumn_nzdco_40');;//配信を開く
-                                            console.log(v111)
-                                            v111.click();
-                                        }, 1000);
-
-
-                                    }, 2000);
-                                }, 5000);
-                            }, 3000);
-                        }
-                    });
-
-                    setTimeout(function () {
-
-
-                        ws.addEventListener('message', event => {//自動停止
-
-                            setTimeout(function () {
-                                if (event.data === '500 ok') {
-                                    console.log("配信終了")
-                                    const v2 = document.querySelector('.m-btn-primary.t-btn-red>a')
-                                    v2.click();
-                                }
-                            })
-
-                        }, 5000);
-                    }, 5000);
+                    if (event.data === '500 ok') {
+                        console.log("配信終了")
+                        const endstream = document.querySelector('.m-btn-primary.t-btn-red>a')
+                        endstream.click();
+                    }
                 });
-                setTimeout(function () {
-                    // 配信を開始するための「次へ」ボタンをクリック
 
-                    const a = document.querySelector('.mrStreamUI__inner>div.mrStreamUI__rightGroup>p.m-btn-primary.t-btn-green>a');
-                    console.log(a);
-                    //  a.click()
-                }, 1000);
-            }, 1000);
+
+
+
+
+
+            });
+
+
         } catch (error) {
             alert("鯖死んでね？")
         }
