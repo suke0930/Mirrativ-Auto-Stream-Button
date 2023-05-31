@@ -81,7 +81,7 @@
                             setTimeout(() => {
                                 let openstreawm = document.querySelector('._openPlayer_nzdco_49.__asideColumn_nzdco_40');;//配信を開く
                                 openstreawm.click();
-                            }, 1000);
+                            }, 1500);
 
                         }, 2000);
 
@@ -259,8 +259,6 @@
                         let flagdata_key = null//スコープ対策
                         let flagdata_url = null//スコープ対策
                         if (storedJsonData.status === 0) {
-                            console.log("じゃあなんで実行されないんですか？")
-                            console.log(params)
                             flagdata_url = params.url
                             flagdata_key = params.key
                         }
@@ -271,11 +269,6 @@
 
 
                         const checknewparams = geturl();//新しいURLを取得する
-                        console.log("どうなってんだ教えは!")
-                        console.log(storedJsonData)
-                        console.log(flagdata_url)
-                        console.log(checknewparams.URL)
-                        console.log("どうなってんだ教えは!")
 
 
                         if (flagdata_url === checknewparams.url) {//キーが変わっているか確認
