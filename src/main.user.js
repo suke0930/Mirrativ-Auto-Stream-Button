@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mirrativ Auto Stream Button
 // @namespace    mirrativ_auto_stream_button
-// @version      1.2
+// @version      1.3
 // @description  Adds an "Auto Stream" button to the Mirrativ broadcast page and types "でいりー" in the input field when clicked.
 // @author       suke
 // @match        https://www.mirrativ.com/broadcast/*
@@ -248,10 +248,38 @@
                         const close = document.querySelector('.m-btn-close.t-btn-close-green>a')
                         close.click();
                         // 1秒待機
+                        //status1ならstoreJSONDATA.URLを参照スべし
+                        //status0ならparamsを参照スべし
+                        console.log(storedJsonData)
+                        console.log(storedJsonData.status)
+                        /**
+                         * @param {string} flagdata_url　更新判定に使う値。URLのほう
+                         * @param {string} flagdata_key  更新判定に使う値。KEYのほう
+                         */
+                        let flagdata_key = null//スコープ対策
+                        let flagdata_url = null//スコープ対策
+                        if (storedJsonData.status === 0) {
+                            console.log("じゃあなんで実行されないんですか？")
+                            console.log(params)
+                            flagdata_url = params.url
+                            flagdata_key = params.key
+                        }
+                        if (storedJsonData.status === 1) {
+                            flagdata_url = storedJsonData.URL
+                            flagdata_key = storedJsonData.KEY
+                        }
+
 
                         const checknewparams = geturl();//新しいURLを取得する
-                        if (params.url === checknewparams.url) {//キーが変わっているか確認
-                            if (params.key === checknewparams.key) {//もしキーが変わっていない場合
+                        console.log("どうなってんだ教えは!")
+                        console.log(storedJsonData)
+                        console.log(flagdata_url)
+                        console.log(checknewparams.URL)
+                        console.log("どうなってんだ教えは!")
+
+
+                        if (flagdata_url === checknewparams.url) {//キーが変わっているか確認
+                            if (flagdata_key === checknewparams.key) {//もしキーが変わっていない場合
                                 //リロードする
                                 const keygen = {
                                     URL: params.url,
