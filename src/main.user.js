@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Mirrativ Auto Stream Button
 // @namespace    mirrativ_auto_stream_button
-// @version      1.1
+// @version      1.2
 // @description  Adds an "Auto Stream" button to the Mirrativ broadcast page and types "でいりー" in the input field when clicked.
 // @author       suke
 // @match        https://www.mirrativ.com/broadcast/*
@@ -260,7 +260,7 @@
                                     mode: 1//全自動に対応させた暁にはこれが変動するはず
                                 }//init  
 
-                                localStorageedit(1, "keygen", keygen);//データを保存する
+                                if (storedJsonData.status === 0) { localStorageedit(1, "keygen", keygen) };//データを保存する
                                 document.location.reload()//リロードする\
 
                                 const returndata = {
