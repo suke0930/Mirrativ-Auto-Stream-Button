@@ -1,3 +1,4 @@
+<img src="http://counter.seku.su/cmoe?name=sukeMASB&theme=r34" alt="sukeMASB" /><br>
 # 概要
 Mirattivのwebアプリ・サイトに自動配信ボタンを追加することにより、より容易に配信準備をできるようにします。
 現状はOBSのみ対応しています。
