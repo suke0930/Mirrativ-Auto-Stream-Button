@@ -16,30 +16,12 @@
     const title = "でいりー"//タイトル
 
 
-    const callback = function (mutationsList, observer) {
-        for (let mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                // 新しいli要素が追加された場合に、イベントをトリガーする
-                if (mutation.addedNodes.length > 0 && mutation.addedNodes[0].nodeName === 'LI') {
-                    // イベントをトリガーする処理を記述
-                    console.log('新しいli要素が追加されました');
-                }
-            }
-        }
-    };
-
     // MutationObserverの設定オブジェクトを作成
 
 
     // MutationObserverのインスタンスを生成し、監視を開始する
 
 
-    const observer = new MutationObserver(callback);
-    async function a(observer) {
-        const ul = document.querySelector('.mrChatList__list');
-        const config = { childList: true };
-        observer.observe(ul, config);
-    }
     /**
      * サーバーと接続し自動配信を行う
      * @param {string} afk 全自動か半自動化の判断 
@@ -69,20 +51,19 @@
                 ws.send(JSON.stringify(data));  //URLとKEYをサーバーに送信する
 
                 ws.addEventListener('message', event => {//自動開始
+
                     if (event.data === '400 ok') {
 
                         console.log("配信開始")
 
                         const startstream = document.querySelector('.mrStreamUI__inner>div.mrStreamUI__rightGroup>p.m-btn-primary.t-btn-green>a');
                         startstream.click();
-                        setTimeout(() => {
+                        //ここになんかかく
+                        open_mine_stream();
+                        setTimeout(async () => {
+                            //ウィンドウを閉じる
                             const closewindow = document.querySelector('.mrOverlay__share>p.m-btn-close.t-btn-close-green>a');
                             closewindow.click();
-                            setTimeout(() => {
-                                let openstreawm = document.querySelector('._openPlayer_nzdco_49.__asideColumn_nzdco_40');;//配信を開く
-                                openstreawm.click();
-                            }, 1500);
-
                         }, 2000);
 
 
@@ -107,8 +88,37 @@
             alert("鯖死んでね？")
         }
     }
+    /**
+     * websocketのああれこれをこなす関数。
+     * wsのコンストラクタを渡すだけで簡易的にメッセージを待機したりできる
+     * @param {object} ws websokcetのインスタンス 
+     */
+    const websocket_const = async (ws) => {
+        this.waitmessege = async (ws) => {
+            return new Promise((resolve, reject) => {
+                ws.addEventListener('message', event => {
+                    resolve(event)
+                })
+            })
+        }
+    };
+    /**
+     * @param {object} websocket websocketを簡単に扱うためのコンストラクタ「websocket_const」のインスタンス
+     *       
+     */
+    const websocket = new websocket_const;
+
+    async function open_mine_stream() {
+        const obs_has_start_stream = await websocket.waitmessege(ws)
+        if (obs_has_start_stream.data === "hasstartstream") {
+            setTimeout(() => {
+                openstream();
+            }, 500);
+
+        }
+    }
     function addAutoStreamButton() {
-        console.log("1番")
+        //console.log("1番")
         // Create a new button element
         const button = document.createElement('button');
         button.innerHTML = '全自動配信';
@@ -210,6 +220,21 @@
         }
     }
 
+
+    /**
+     * 配信を開くだけの関数
+     */
+    function openstream() {
+        let openstreawm = document.querySelector('._openPlayer_nzdco_49.__asideColumn_nzdco_40');;//配信を開く
+        if (openstreawm !== null) {
+            openstreawm.click();
+        } else {
+            setTimeout(() => {
+                openstream();
+            }, 500);
+        }
+
+    }
 
     /**
      * 新しいキーを再生成し、そのキーがきちんと更新されているか確認する関数。
