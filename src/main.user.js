@@ -59,7 +59,7 @@
                         const startstream = document.querySelector('.mrStreamUI__inner>div.mrStreamUI__rightGroup>p.m-btn-primary.t-btn-green>a');
                         startstream.click();
                         //ここになんかかく
-                        open_mine_stream();
+                        open_mine_stream(ws);
                         setTimeout(async () => {
                             //ウィンドウを閉じる
                             const closewindow = document.querySelector('.mrOverlay__share>p.m-btn-close.t-btn-close-green>a');
@@ -93,8 +93,8 @@
      * wsのコンストラクタを渡すだけで簡易的にメッセージを待機したりできる
      * @param {object} ws websokcetのインスタンス 
      */
-    const websocket_const = async (ws) => {
-        this.waitmessege = async (ws) => {
+    const websocket_const = function (ws) {
+        this.waitmessege = async function (ws) {
             return new Promise((resolve, reject) => {
                 ws.addEventListener('message', event => {
                     resolve(event)
@@ -108,12 +108,13 @@
      */
     const websocket = new websocket_const;
 
-    async function open_mine_stream() {
+    async function open_mine_stream(ws) {
         const obs_has_start_stream = await websocket.waitmessege(ws)
         if (obs_has_start_stream.data === "hasstartstream") {
+            // console.log("5SEC")
             setTimeout(() => {
                 openstream();
-            }, 500);
+            }, 5000);
 
         }
     }
@@ -227,6 +228,7 @@
     function openstream() {
         let openstreawm = document.querySelector('._openPlayer_nzdco_49.__asideColumn_nzdco_40');;//配信を開く
         if (openstreawm !== null) {
+            console.log("展開")
             openstreawm.click();
         } else {
             setTimeout(() => {
